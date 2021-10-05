@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="d45a19e8-1397-4491-95dd-ba74347ca71c" file="properties/${env}-secure.yaml" key="${runtime.key}" />
+	<global-property doc:name="Global Property" doc:id="48b9124e-34b6-4ffc-b80c-393a06e6ed7d" name="env" value="dev" />
+	<global-property doc:name="Global Property" doc:id="d397524b-143b-4599-bfe0-cf7b181b329e" name="runtime.key" value="123456789101234567" />
+
+</mule>
