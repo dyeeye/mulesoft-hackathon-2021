@@ -1,8 +1,129 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
-	
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd ">
+    <flow name="s3-sapi-main">
+        <http:listener config-ref="s3-sapi-httpListenerConfig" path="/api/${secure::api.version}/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="s3-sapi-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:name="Bad Request">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:name="Not Found">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:name="Method Not Allowed">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:name="Not Acceptable">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:name="Unsupported Media Type">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="ANY" enableNotifications="true" logException="true">
+                <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:name="Internal Server Error">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Internal Server Error"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[500]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="get:\files\(id):s3-sapi-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+            <ee:variables>
+                <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  id: "",
+  uri: "",
+  content: "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",
+  fileName: "mulesoft-logo.png"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="post:\files:application\json:s3-sapi-config">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  id: "",
+  uri: "",
+  fileName: ""
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
 </mule>
