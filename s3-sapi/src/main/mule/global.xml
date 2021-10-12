@@ -22,6 +22,6 @@ http://www.mulesoft.org/schema/mule/s3 http://www.mulesoft.org/schema/mule/s3/cu
     </http:listener-config>
     <apikit:config name="s3-sapi-config" api="resource::9bc3ba95-5f0d-4f01-8718-68464a7c5df0:s3-sapi:1.0.0:raml:zip:s3-sapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
 	<s3:config name="Amazon_S3_Configuration" doc:name="Amazon S3 Configuration" doc:id="91876642-c82f-4c3e-948c-91c78c57bb7f" >
-		<s3:basic-connection />
+		<s3:basic-connection accessKey="${secure::s3.accessKey}" secretKey="${secure::s3.secretKey}" region="${secure::s3.region}"/>
 	</s3:config>    
 </mule>
