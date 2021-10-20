@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd"></mule>
+<mule xmlns:solace="http://www.mulesoft.org/schema/mule/solace" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/solace http://www.mulesoft.org/schema/mule/solace/current/mule-solace.xsd">
+	<flow name="collect-eapiFlow" doc:id="97f88fcf-3f9d-4fbf-8992-d6d86b0de24b" >
+		<solace:publish doc:name="Publish" doc:id="90148a41-91ff-4472-8c00-b4238c3f6f0f" config-ref="Solace_Connector_Config" address="live.pushImage.queue" endpoint-type="QUEUE"/>
+	</flow>
+</mule>

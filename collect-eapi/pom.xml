@@ -13,6 +13,10 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
+        <solace.version>10.3.1</solace.version>
+        <javax-jms-version>1.1</javax-jms-version>
+        <javax.jms.api.version>2.0.1</javax.jms.api.version>
+        
 		<app.runtime>4.4.0</app.runtime>
 		<mule.maven.plugin.version>3.5.2</mule.maven.plugin.version>
 	</properties>
@@ -29,6 +33,31 @@
 				<artifactId>mule-maven-plugin</artifactId>
 				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
+				  <configuration>
+                    <sharedLibraries>
+                        <sharedLibrary>
+                            <groupId>com.solacesystems</groupId>
+                            <artifactId>sol-jms</artifactId>
+                        </sharedLibrary>
+                        <sharedLibrary>
+                            <groupId>com.solacesystems</groupId>
+                            <artifactId>sol-common</artifactId>
+                        </sharedLibrary>
+                        <sharedLibrary>
+                            <groupId>com.solacesystems</groupId>
+                            <artifactId>sol-jcsmp</artifactId>
+                        </sharedLibrary>
+                        <sharedLibrary>
+                            <groupId>javax.jms</groupId>
+                            <artifactId>jms</artifactId>
+                        </sharedLibrary>
+                        <sharedLibrary>
+                            <groupId>javax.jms</groupId>
+                            <artifactId>javax.jms-api</artifactId>
+                        </sharedLibrary>
+                    </sharedLibraries>
+                    <classifier>mule-application</classifier>        
+                </configuration>
 			</plugin>
 		</plugins>
 	</build>
@@ -52,6 +81,43 @@
 			<version>1.2.3</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
+		<dependency>
+			<groupId>org.mule.connectors</groupId>
+			<artifactId>mule-jms-connector</artifactId>
+			<version>1.7.5</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+            <groupId>com.solacesystems</groupId>
+            <artifactId>sol-jms</artifactId>
+            <version>${solace.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.solacesystems</groupId>
+            <artifactId>sol-common</artifactId>
+            <version>${solace.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.solacesystems</groupId>
+            <artifactId>sol-jcsmp</artifactId>
+            <version>${solace.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.jms</groupId>
+            <artifactId>jms</artifactId>
+            <version>${javax-jms-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.jms</groupId>
+            <artifactId>javax.jms-api</artifactId>
+            <version>${javax.jms.api.version}</version>
+        </dependency>
+        <dependency>
+			<groupId>com.solace.connector</groupId>
+			<artifactId>solace-mulesoft-connector</artifactId>
+			<version>0.3.3-SNAPSHOT</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
 	</dependencies>
 
 	<repositories>
@@ -67,6 +133,15 @@
 			<url>https://repository.mulesoft.org/releases/</url>
 			<layout>default</layout>
 		</repository>
+		<repository>
+			<id>myMavenRepo.read</id>
+			<url>https://mymavenrepo.com/repo/27AIdW4GdyXFzutegEs5/</url>
+		</repository>
+		<repository>
+     		 <id>repository.jboss.org-public</id>
+     		 <name>JBoss.org Maven repository</name>
+      		<url>https://repository.jboss.org/nexus/content/groups/public</url>
+   		</repository>
 	</repositories>
 
 	<pluginRepositories>

@@ -1,0 +1,6 @@
+broker:
+  host: mr-v1kxbxdtx7i.messaging.solace.cloud
+  smfport: "55443"
+  username: "solace-cloud-client"
+  password: "![6c40J0HeqJJGYG3jbPhmH0FaaGni1GV+kSfH+fGXfpI=]"
+  messagevpn: mulequeue
