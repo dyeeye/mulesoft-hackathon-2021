@@ -116,7 +116,11 @@ output application/json
   id: vars.id,
   uri: "s3://$(Mule::p('secure::s3.bucketName'))/$(vars.id)",
   content: dw::core::Binaries::toBase64(vars.file),
-  fileName: vars.id
+  fileName: vars.id,
+  metadata: [{
+  	key: 'bucketName',
+  	value: Mule::p('secure::s3.bucketName')
+  }]
 }]]></ee:set-payload>
             </ee:message>
         </ee:transform>
@@ -153,7 +157,11 @@ output application/json
 {
 	id: payload.fileName,
 	uri: "s3://$(Mule::p('secure::s3.bucketName'))/$(payload.fileName)",
-	fileName: payload.fileName
+	fileName: payload.fileName,
+	metadata: [{
+		key: 'bucketName',
+		value: Mule::p('secure::s3.bucketName')
+	}]
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>

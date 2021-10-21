@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd ">
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
     <flow name="rekognition-sapi-main">
         <http:listener config-ref="rekognition-sapi-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
@@ -99,33 +100,73 @@ output application/json
         </error-handler>
     </flow>
     <flow name="post:\images:application\json:rekognition-sapi-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
+        <ee:transform doc:name="Image Rekognition Request" doc:id="1adcb1ba-9901-4a1a-9a4f-7c4846a5718c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
 {
-  uri: "https://hackathon-order-images.s3.us-east-2.amazonaws.com/mulesoft-order.png",
-  labels: [
-    {
-      name: "Face-Mask-25g",
-      accuracy: 95
-    }, 
-    {
-      name: "Face-Mask-25g",
-      accuracy: 85
-    }, 
-    {
-      name: "Face-Mask-25g",
-      accuracy: 90
-    }, 
-    {
-      name: "Eyes-Mask-4pc",
-      accuracy: 92
-    }
-  ]
+	Image: {
+		S3Object: {
+			Bucket: payload.metadata[?($.key=='bucketName')][0].value,
+			Name: payload.fileName
+		}
+	},
+	MinConfidence: 90
 }]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
+			</ee:message>
+			<ee:variables >
+			</ee:variables>
+		</ee:transform>
+		<http:request method="POST" doc:name="DetectLabels" doc:id="42abab16-61b3-461f-be52-502c5eeae3c0" config-ref="AWS_REKOGNITION_HTTPS_Request_configuration" path="/" outputMimeType="application/json">
+			<http:headers ><![CDATA[#[output application/json
+
+import generateSecureAWSHeaders from dwl::com::ambassadorpatryk::aws::auth
+---
+generateSecureAWSHeaders(
+		'POST', 
+		Mule::p('secure::aws.region'), 
+		'rekognition',
+		'RekognitionService.DetectLabels', 
+		'/', 
+		'', 
+		payload, 
+		Mule::p('secure::aws.accessKey'), 
+		Mule::p('secure::aws.secretKey'))]]]></http:headers>
+			<http:response-validator >
+				<http:success-status-code-validator values="200,400" />
+			</http:response-validator>
+		</http:request>
+		<choice doc:name="Choice" doc:id="79780472-8208-4f71-a396-d4fcf58ec4c1" >
+			<when expression="#[attributes.statusCode == 400]">
+				<ee:transform doc:name="No Match" doc:id="a1171d61-1f01-45ad-9d2f-68b69ee4f2a8" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Labels" doc:id="a170982b-3d73-4e5b-ad2b-a4644f189c23">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	labels: flatten((payload.Labels filter !isEmpty($.Instances.BoundingBox) map {
+		labels: $.Instances map ((item, index) -> {
+			name: $.Name,
+			accuracy: item.Confidence
+		})
+	}).labels)
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</otherwise>
+		</choice>
     </flow>
 </mule>

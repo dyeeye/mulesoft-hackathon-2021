@@ -1,0 +1,14 @@
+api:
+  version: "v1"
+  
+https:
+  keystore:
+    password: "![Z2KcdBXXGWOaURt981eJnA==]"
+    keypassword: "![Z2KcdBXXGWOaURt981eJnA==]"
+    path: "keystore.p12"
+    
+s3:
+  secretKey: "![fH/h7EGyykfrxQ1nj+9fgyXMzpvsm1RQCk5N8RNq2ZsHR31T/m+qlGA91Vzxoe5m]"
+  accessKey: "![Y7ID0RhV/EKxv8GPPP8Acv8faEixJabCxDxf19vIZU8=]"
+  region: "us-east-2"
+  bucketName: "hackathon-order-images"

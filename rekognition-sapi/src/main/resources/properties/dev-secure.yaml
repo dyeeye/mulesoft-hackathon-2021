@@ -1,0 +1,15 @@
+api:
+  version: "v1"
+  
+https:
+  keystore:
+    password: "![Z2KcdBXXGWOaURt981eJnA==]"
+    keypassword: "![Z2KcdBXXGWOaURt981eJnA==]"
+    path: "keystore.p12"
+    
+    
+aws:
+  host: "rekognition.us-east-2.amazonaws.com"
+  region: "us-east-2"
+  accessKey: "![PTwz2akGUFQuyJ/1u8uMtMsfAl+gheTflPc/V31tyhU=]"
+  secretKey: "![axPCGvARvyyGVgnkK96KJDwTwEkHiBreyEMZ71zREqVUpGuk9G4gCdNSkcjYIP4y]"
