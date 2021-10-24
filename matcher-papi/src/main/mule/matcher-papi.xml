@@ -9,9 +9,21 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 	<flow name="matcher-main-flow" doc:id="5c16e41d-4fd8-449b-8cb7-29f8730c6a10" >
 		<solace:consumer-source doc:name="EndpointListener" doc:id="6e9c9087-de0c-413e-bbd3-e8c4c2faec0e" config-ref="Solace_Connector_Config" address="${secure::broker.queue.image}" endpoint-type="QUEUE" contentType="application/json"/>
 		<logger level="INFO" doc:name="Logger" doc:id="72177c16-419e-47ed-96f9-8890922f9a7e" message="Processing new order image"/>
-		<flow-ref doc:name='upload-file-flow' doc:id="ad4777ef-ff5a-436f-aa40-4bdf1e3489d4" name="upload-file-flow" target="file"/>
+		<set-variable value="#[payload.consumer]" doc:name="Consumer ID" doc:id="323fbcc3-fdb0-4bf6-9bd9-0fe4fcf53637" variableName="consumerId"/>
+		<flow-ref doc:name='upload-file-flow' doc:id="ad4777ef-ff5a-436f-aa40-4bdf1e3489d4" name="upload-file-flow"/>
 		<flow-ref doc:name="rekognize-labels-flow" doc:id="e589f6a5-b943-4c10-805f-24cad3380202" name="rekognize-labels-flow" target="labels"/>
 		<flow-ref doc:name="get-orders-flow" doc:id="dcdf8fe0-9cd2-4dcb-8ed6-2087762bec5f" name="get-orders-flow" target="orders"/>
+		<ee:transform doc:name="Matched Orders" doc:id="c2497417-0e68-4d30-b382-9a06e26d338d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	consumer: vars.consumerId,
+	orders: []
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
 		<solace:publish doc:name="Orders" doc:id="f0508f71-ad2a-444b-963c-abcba0b15c29" config-ref="Solace_Connector_Config" address="${secure::broker.queue.order}" endpoint-type="QUEUE">
 			<solace:message contentType="application/json" correlationId="#[correlationId]" />
 		</solace:publish>
@@ -23,7 +35,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 output application/json
 ---
 {
-	content: payload,
+	content: payload.request,
 	fileName: '$(uuid()).png'
 }]]></ee:set-payload>
 			</ee:message>
@@ -42,8 +54,8 @@ output application/json
 output application/json
 ---
 {
-	fileName: vars.file.fileName,
-	metadata: vars.file.metadata map {
+	fileName: payload.fileName,
+	metadata: payload.metadata map {
 		key: $.key,
 		value: $.value
 	}
