@@ -17,7 +17,7 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 	<http:listener-config name="rekognition-sapi-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8092" protocol="HTTPS">
 			<tls:context >
-				<tls:key-store type="pkcs12" path="${secure::https.keystore.path}" keyPassword="${secure::https.keystore.keypassword}" password="${secure::https.keystore.password}" />
+				<tls:key-store type="pkcs12" path="${secure::https.keystore.path}" keyPassword="${secure::https.keystore.keypassword}" password="${secure::https.keystore.password}" alias="cloudhub"/>
 			</tls:context>
 		</http:listener-connection>
     </http:listener-config>

@@ -13,7 +13,7 @@ http://www.mulesoft.org/schema/mule/solace http://www.mulesoft.org/schema/mule/s
 	<http:request-config name="S3-SAPI_Request_configuration" doc:name="HTTP Request configuration" doc:id="91e43967-2c94-40b0-afda-23a8fb7c5068" basePath="/api/${secure::mule.s3-sapi.version}">
 		<http:request-connection protocol="HTTPS" host="${secure::mule.s3-sapi.host}" port="${secure::mule.s3-sapi.port}" >
 			<tls:context >
-				<tls:trust-store path="truststore.p12" password="${secure::mule.truststore.password}" type="pkcs12" />
+				<tls:trust-store path="truststore.p12" password="${secure::mule.truststore.password}" type="pkcs12"/>
 			</tls:context>
 		</http:request-connection>
 	</http:request-config>
