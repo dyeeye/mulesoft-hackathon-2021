@@ -1,0 +1,19 @@
+<html>
+	<head>
+		<title>Collect Order</title>
+		<script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
+		<script type="text/javascript">
+			//connect to WebSocket
+			var ws = new WebSocket("ws://localhost:8091/ws/images");
+			
+	
+			var request = {};
+			ws.send(JSON.stringify(request));
+			
+			
+		</script>
+	</head>
+	<body>
+		
+	</body>
+</html>

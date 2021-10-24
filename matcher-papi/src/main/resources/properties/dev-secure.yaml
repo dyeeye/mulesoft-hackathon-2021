@@ -1,0 +1,27 @@
+broker:
+  host: "mr-v1kxbxdtx7i.messaging.solace.cloud"
+  smfport: "55443"
+  username: "solace-cloud-client"
+  password: "![6c40J0HeqJJGYG3jbPhmH0FaaGni1GV+kSfH+fGXfpI=]"
+  messagevpn: "mulequeue"
+  queue:
+    image: "live.pushImage.queue"
+    order: "live.pushOrders.queue"
+  
+mule:
+  clientId: ""
+  clientSecret: ""
+  truststore:
+    password: "![Z2KcdBXXGWOaURt981eJnA==]"
+  s3-sapi:
+    host: "mule-worker-internal-mh21-s3-sapi.us-e2.cloudhub.io"
+    port: "8092"
+    version: "v1"
+  rekognition-sapi:
+    host: "mule-worker-internal-mh21-rekognition-sapi.us-e2.cloudhub.io"
+    port: "8092"
+    version: "v1"
+  order-salesforce-sapi:
+    host: "mule-worker-internal-mh21-order-salesforce-sapi.us-e2.cloudhub.io"
+    port: "8092"
+    version: "v1"
