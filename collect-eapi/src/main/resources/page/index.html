@@ -2,31 +2,295 @@
 	<head>
 		<title>Collect Order</title>
 		<script src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
+		<script src="https://use.fontawesome.com/4d6fddb47d.js"></script>
+		<style>
+			@font-face {
+  font-family: 'Exo 2';
+  font-style: normal;
+  font-weight: 300;
+  src: url(https://fonts.gstatic.com/s/exo2/v10/7cH1v4okm5zmbvwkAx_sfcEuiD8j4PKsOdC6.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Exo 2';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/s/exo2/v10/7cH1v4okm5zmbvwkAx_sfcEuiD8jvvKsOdC6.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Exo 2';
+  font-style: normal;
+  font-weight: 500;
+  src: url(https://fonts.gstatic.com/s/exo2/v10/7cH1v4okm5zmbvwkAx_sfcEuiD8jjPKsOdC6.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Exo 2';
+  font-style: normal;
+  font-weight: 700;
+  src: url(https://fonts.gstatic.com/s/exo2/v10/7cH1v4okm5zmbvwkAx_sfcEuiD8jWfWsOdC6.ttf) format('truetype');
+}
+body {
+  background: #ebeff2;
+  font-family: "Exo 2";
+}
+.zone {
+  margin: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background-color: #00a2df;
+  width: 80%;
+  height: 50%;
+  border: 5px dashed white;
+  text-align: center;
+  color: white;
+  z-index: 20;
+  transition: all 0.3s ease-out;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), inset 0 0 0.25em 0 rgba(0, 0, 0, 0.25);
+}
+.zone .btnCompression .active {
+  background: #EB6A5A;
+  color: white;
+}
+.zone i {
+  text-align: center;
+  font-size: 10em;
+  color: #fff;
+  margin-top: 50px;
+}
+.zone .selectFile {
+  height: 50px;
+  margin: 20px auto;
+  position: relative;
+  width: 200px;
+}
+button {
+  cursor: pointer;
+  display: block;
+  height: 50px;
+  left: 0;
+  top: 0;
+  width: 200px;
+  border-radius: 5px;
+  border: none;
+}
+.zone label,
+.zone input {
+  cursor: pointer;
+  display: block;
+  height: 50px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  border-radius: 5px;
+}
+button,
+.zone label {
+  background: #fff;
+  color: #00a2df;
+  display: inline-block;
+  font-size: 1.2em;
+  line-height: 50px;
+  padding: 0;
+  text-align: center;
+  white-space: nowrap;
+  text-transform: uppercase;
+  font-weight: 400;
+  box-shadow: 0 1px 1px gray;
+}
+.zone input[type=file] {
+  opacity: 0;
+}
+.zone.in {
+  color: white;
+  border-color: white;
+  background-color: #00a2df;
+}
+.zone.in i {
+  color: #fff;
+}
+.zone.in label {
+  background: #fff;
+  color: #00a2df;
+}
+.zone.hover {
+  color: gray;
+  border-color: white;
+  background: #fff;
+  border: 5px dashed gray;
+}
+.zone.hover i {
+  color: #00a2df;
+}
+.zone.hover label {
+  background: #fff;
+  color: #00a2df;
+}
+.zone.fade {
+  transition: all 0.3s ease-out;
+  opacity: 1;
+}
+
+		</style>
+		
+		
 		<script type="text/javascript">
 			//connect to WebSocket
 			var ws = new WebSocket("ws://localhost:8091/ws/images");
-			
-			
-			// send message
-			function sendMessage() {
-				var request = {
-
-				};
-				ws.send(JSON.stringify(request));
+			var foundOrders = null;
+			var idx = 1;
+				
+			//wait for messages back
+			ws.onmessage = function (event) {
+				var orders = JSON.parse(event.data).orders;
+				if(orders == null) {
+					$("#failed").show();
+				} else if(orders.length == 0) {
+					$("#nomatch").show();
+				} else if(orders.length > 0) {
+					$(".order-number").text(orders[0]);
+					$("#matchOrder").show();
+				}
+				
+				$("#processing").hide();
+				
+				foundOrders = orders;
+				idx = 1;
 			}
-			
-			// send message on form submit
+
 			$(document).ready(function() {
-			    $(document).on('submit', '#my-form', function() {
-			      sendMessage();
-			      return false;
-			     });
-			     });
+				//hide other screens
+				$("#processing").hide();
+				$("#failed").hide();
+				$("#matchOrder").hide();
+				$("#collectedOrder").hide();
+				$("#nomatch").hide();
+								
+				// order photo done
+				$("#file").change(function(e) {					
+					// file to big
+					if(e.target.files[0].size > 4194304) 
+					{
+						$("#tobig").show();
+					}
+					else {
+					
+						$("#tobig").hide();
+						const reader = new FileReader();
+						reader.addEventListener('load', (event) => {
+							//read content and send
+							ws.send(JSON.stringify({image: event.target.result}));
+							$("#dropZ").hide();
+							$("#processing").show();
+							console.log('Image Sent');
+						});
+						reader.readAsDataURL(e.target.files[0]);
+					}
+				});
+				
+				// confirm order
+				$("#confirm").click(function(e){
+					ws.send(JSON.stringify({order: $(".order-number").first().text()}));
+					$("#matchOrder").hide();
+					$("#collectedOrder").show();
+				});
+				
+				// deny order
+				$("#deny").click(function(e){
+					if(foundOrders != null && foundOrders.length > 1 && idx < foundOrders.length) {
+						$(".order-number").text(foundOrders[idx]);
+						idx = idx + 1;						
+					} else {
+						$("#nomatch").show();
+						$("#matchOrder").hide();
+					}
+				});
+				
+				// start
+				$(".start").click(function(e){
+					$("#dropZ").show();
+					$("#failed").hide();
+					$("#collectedOrder").hide();
+					$("#nomatch").hide();
+				});
+				
+				$(document).bind('dragover', function (e) {
+				    var dropZone = $('.zone'),
+				        timeout = window.dropZoneTimeout;
+				    if (!timeout) {
+				        dropZone.addClass('in');
+				    } else {
+				        clearTimeout(timeout);
+				    }
+				    var found = false,
+				        node = e.target;
+				    do {
+				        if (node === dropZone[0]) {
+				            found = true;
+				            break;
+				        }
+				        node = node.parentNode;
+				    } while (node != null);
+				    if (found) {
+				        dropZone.addClass('hover');
+				    } else {
+				        dropZone.removeClass('hover');
+				    }
+				    window.dropZoneTimeout = setTimeout(function () {
+				        window.dropZoneTimeout = null;
+				        dropZone.removeClass('in hover');
+				    }, 100);
+				});
+			});
 		</script>
+		
 	</head>
-	<body>
-		<form id="my-form">
-		  <input type="submit" value="Submit">
-		</form> 
+	<body>	
+		<div class="zone">
+		  <div id="dropZ">
+		    <i class="fa fa-cloud-upload" id="icon"></i>
+		    <div><p id="tobig" style="display: none;">File is to big! Try again. </p>Drag and drop collected order picture here</div>                    
+		    <span>OR</span>
+		    <div class="selectFile">       
+		      <label for="file">Select file</label>                   
+		      <input type="file" name="files[]" id="file" accept="image/*" capture="environment">
+		    </div>
+		    <p>File size limit : 4 MB</p>
+		  </div>
+		  <div id="processing">
+		  	<i class="fa fa-spinner"></i>
+		  	<br/>
+		  	<div>Matching your order, please hold online.</div>   
+		  </div>
+		  <div id="failed">
+		  	<i class="fa fa-exclamation-circle"></i>
+		  	<div>Error during processing. Please contact Administrator</div>  
+			<br />
+		  	<button class="start">Try again?</button>
+		  </div>
+		  <div id="nomatch">
+		  	<i class="fa fa-exclamation-circle"></i>
+		  	<div>No matching order found.</div>  
+			<br />
+		  	<button class="start">Try again?</button>
+		  </div>
+		  <div id="matchOrder">
+		  	<i class="fa fa-shopping-cart"></i>
+		  	<br />
+		    <div>Is this order #<b class="order-number">1234</b>?</div>                    
+		    <br />
+		    <button id="confirm">Yes</button>
+		    <span>OR</span>
+		    <button id="deny">No</button>
+		  </div>
+		  <div id="collectedOrder">
+		  	<i class="fa fa-check-circle"></i>
+		  	<div>Order collected #<b class="order-number">1234</b>!</div>  
+		  	<br />
+		  	<button class="start">Next Order?</button>
+		  </div>
+		</div>
 	</body>
 </html>
