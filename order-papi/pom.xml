@@ -52,6 +52,19 @@
 			<version>1.2.3</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
+		<dependency>
+			<groupId>9bc3ba95-5f0d-4f01-8718-68464a7c5df0</groupId>
+			<artifactId>order-papi</artifactId>
+			<version>1.0.1</version>
+			<classifier>raml</classifier>
+			<type>zip</type>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.modules</groupId>
+			<artifactId>mule-apikit-module</artifactId>
+			<version>1.5.5</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
 	</dependencies>
 
 	<repositories>
