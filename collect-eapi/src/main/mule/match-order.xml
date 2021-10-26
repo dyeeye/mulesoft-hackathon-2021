@@ -6,15 +6,6 @@
 http://www.mulesoft.org/schema/mule/solace http://www.mulesoft.org/schema/mule/solace/current/mule-solace.xsd
 http://www.mulesoft.org/schema/mule/websocket http://www.mulesoft.org/schema/mule/websocket/current/mule-websocket.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-	<flow name="match-orderFlow" doc:id="e2923865-a51b-4ee9-adf8-6fef49c199ac" >
-		<websocket:send doc:name="Copy_of_Matched Orders" doc:id="9db58ab9-c9eb-40e9-a334-44beae56ab40" config-ref="WebSockets_Config" socketId="#[attributes.socketId]">
-			<websocket:content><![CDATA[#[output application/json
----
-{
-	orders: ["order1", "order2", "order3"]
-}]]]></websocket:content>
-		</websocket:send>
-	</flow>
 	<flow name="new-order-image-flow" doc:id="18ccc74f-c1cd-4052-928e-482c9eaf92f9" >
 		<websocket:inbound-listener doc:name="New Order Image" doc:id="5786fed2-e833-4071-a25e-e704fa0c846a" config-ref="WebSockets_Config" path="/images" outputMimeType="application/json"/>
 		<logger level="INFO" doc:name="Start" doc:id="b3e48544-4bff-4b29-bd35-418ae8787b53" message="New Order Image Request" />
