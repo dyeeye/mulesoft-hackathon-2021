@@ -5,7 +5,6 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/websocket http://www.mulesoft.org/schema/mule/websocket/current/mule-websocket.xsd">
 	<flow name="collected-order-flow" doc:id="869c0a40-b729-4097-ace3-2fca069cf978" >
-		<websocket:inbound-listener doc:name="Collected Order" doc:id="e2372946-dcfb-43c0-80e8-b963c7c9de86" config-ref="WebSockets_Config" path="/orders" outputMimeType="application/json"/>
-		<logger level="INFO" doc:name="Logger" doc:id="f65563d2-17c7-4ed8-ab93-a4683d74e37f" />
+		<logger level="INFO" doc:name="Logger" doc:id="f65563d2-17c7-4ed8-ab93-a4683d74e37f" message="#[payload]"/>
 	</flow>
 </mule>

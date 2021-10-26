@@ -6,21 +6,52 @@
 http://www.mulesoft.org/schema/mule/solace http://www.mulesoft.org/schema/mule/solace/current/mule-solace.xsd
 http://www.mulesoft.org/schema/mule/websocket http://www.mulesoft.org/schema/mule/websocket/current/mule-websocket.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="match-orderFlow" doc:id="e2923865-a51b-4ee9-adf8-6fef49c199ac" >
+		<websocket:send doc:name="Copy_of_Matched Orders" doc:id="9db58ab9-c9eb-40e9-a334-44beae56ab40" config-ref="WebSockets_Config" socketId="#[attributes.socketId]">
+			<websocket:content><![CDATA[#[output application/json
+---
+{
+	orders: ["order1", "order2", "order3"]
+}]]]></websocket:content>
+		</websocket:send>
+	</flow>
 	<flow name="new-order-image-flow" doc:id="18ccc74f-c1cd-4052-928e-482c9eaf92f9" >
 		<websocket:inbound-listener doc:name="New Order Image" doc:id="5786fed2-e833-4071-a25e-e704fa0c846a" config-ref="WebSockets_Config" path="/images" outputMimeType="application/json"/>
-		<logger level="INFO" doc:name="Start" doc:id="b3e48544-4bff-4b29-bd35-418ae8787b53" message="New Order Image Request"/>
-		<solace:publish doc:name="New Image" doc:id="90148a41-91ff-4472-8c00-b4238c3f6f0f" config-ref="Solace_Connector_Config" address="${secure::broker.queue.image}" endpoint-type="QUEUE" >
+		<logger level="INFO" doc:name="Start" doc:id="b3e48544-4bff-4b29-bd35-418ae8787b53" message="New Order Image Request" />
+		<choice doc:name="New Image?" doc:id="a2fada2c-2bda-402b-8a62-5d1b28a5e58a" >
+			<when expression="#[!isEmpty(payload.order)]">
+				<flow-ref doc:name="collected-order-flow" doc:id="41eb2952-e081-464f-8122-cac9921d1074" name="collected-order-flow"/>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="New Image Request" doc:id="a0d44ae7-95be-43b7-9a73-538952784592">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	consumer: attributes.socketId,
+	image: payload.image
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<solace:publish doc:name="New Image" doc:id="90148a41-91ff-4472-8c00-b4238c3f6f0f" config-ref="Solace_Connector_Config" address="${secure::broker.queue.image}" endpoint-type="QUEUE">
 			<solace:message contentType="application/json" correlationId="#[correlationId]" />
 		</solace:publish>
+			</otherwise>
+		</choice>
 	</flow>
 	<flow name="matched-orders-flow" doc:id="cb4cdb51-7d35-4038-85e1-d69544b508d7" >
 		<solace:consumer-source doc:name="Matched Orders" doc:id="5fd6e2dd-ee06-41c3-843e-2224358a45dc" config-ref="Solace_Connector_Config" address="${secure::broker.queue.order}" endpoint-type="QUEUE" contentType="application/json"/>
+		<logger level="INFO" doc:name="Start" doc:id="6c45af0c-38a4-468e-9edb-4c82a2501b51" message="Matched orders received: #[payload]"/>
 		<ee:transform doc:name="List of matched orders" doc:id="6dd641c7-0ed0-474e-bc21-9b2d4b7a7ce4" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
+output application/json skipNullOn="everywhere"
 ---
-[]]]></ee:set-payload>
+{
+	orders: payload.orders,
+	error: payload.error
+}]]></ee:set-payload>
 			</ee:message>
 			<ee:variables >
 				<ee:set-variable variableName="socketId" ><![CDATA[%dw 2.0

@@ -150,7 +150,8 @@ button,
 				} else if(orders.length == 0) {
 					$("#nomatch").show();
 				} else if(orders.length > 0) {
-					$(".order-number").text(orders[0]);
+					$(".order-number").text(orders[0].orderNumber);
+					$(".order-number").attr("sfid", orders[0].id);
 					$("#matchOrder").show();
 				}
 				
@@ -192,7 +193,7 @@ button,
 				
 				// confirm order
 				$("#confirm").click(function(e){
-					ws.send(JSON.stringify({order: $(".order-number").first().text()}));
+					ws.send(JSON.stringify({order: $(".order-number").first().attr("sfid")}));
 					$("#matchOrder").hide();
 					$("#collectedOrder").show();
 				});
@@ -200,7 +201,8 @@ button,
 				// deny order
 				$("#deny").click(function(e){
 					if(foundOrders != null && foundOrders.length > 1 && idx < foundOrders.length) {
-						$(".order-number").text(foundOrders[idx]);
+						$(".order-number").text(foundOrders[idx].orderNumber);
+						$(".order-number").attr("sfid", foundOrders[idx].id);
 						idx = idx + 1;						
 					} else {
 						$("#nomatch").show();
