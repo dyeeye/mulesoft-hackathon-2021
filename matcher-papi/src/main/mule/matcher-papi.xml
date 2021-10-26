@@ -23,7 +23,7 @@ output application/json
 {
 	consumer: vars.consumerId,
 	orders: payload.orders map {
-        orderNumber: $.orderNumber,
+        orderNumber: $.number,
         id: $.id
     }
 }]]></ee:set-payload>
@@ -113,12 +113,10 @@ output application/json
 import entrySet from dw::core::Objects
 ---
 {
-	order: {
-		products: entrySet(payload.labels groupBy $.name) map {
-            code: $.key,
-            quantity: sizeOf($.value)
-        }
-    }
+	products: entrySet(payload.labels groupBy $.name) map {
+		code: $.key,
+		quantity: sizeOf($.value)
+	}
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
