@@ -1,0 +1,18 @@
+api:
+  version: "v1"
+  
+https:
+  keystore:
+    password: "![Z2KcdBXXGWOaURt981eJnA==]"
+    keypassword: "![Z2KcdBXXGWOaURt981eJnA==]"
+    path: "keystore.p12"
+    
+smtp:
+  host: "![ukA2XW/OjTz2b+8kA/mDqEB7AOdhxxQ6l9eYPUJZYso=]"
+  port: "465"
+  user: "![0z+51oUbudxEA12gUP7pbc2hUyG8NCq+3u5Z+lTgNKE=]"
+  password: "![uP3e3Y9BIPh2YzSAn52Gig==]"
+  ccEmail: "![jisqRL4AOBrMD+P87gj7CJswdpX30+plMiemavwZAv0=]"
+  truststore:
+    path: "truststore.p12"
+    password: "![eiom9q+E53o+wugyANvqnw==]"
