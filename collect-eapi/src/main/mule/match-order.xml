@@ -41,6 +41,7 @@ output application/json skipNullOn="everywhere"
 ---
 {
 	orders: payload.orders,
+	fileName: payload.fileName,
 	error: payload.error
 }]]></ee:set-payload>
 			</ee:message>

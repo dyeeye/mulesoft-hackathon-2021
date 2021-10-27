@@ -1,0 +1,27 @@
+api:
+  version: "v1"
+  autodiscovery: "17381161"
+  
+https:
+  keystore:
+    password: "![Z2KcdBXXGWOaURt981eJnA==]"
+    keypassword: "![Z2KcdBXXGWOaURt981eJnA==]"
+    path: "keystore.p12"
+      
+mule:
+  clientId: "![kFh8SOQAh3sQnaro7epBf4Q44bXb4kYOUkU/WflmzjGhjmHpO6oYURfh/7pEj2da]"
+  clientSecret: "![f+o4z9MNUKD3NcqpwL7vzWz9LZ4pIWZtnflasy4FDLytbFyIYyphlWBvB3XgX1Cb]"
+  truststore:
+    password: "![Z2KcdBXXGWOaURt981eJnA==]"
+  s3-sapi:
+    host: "mule-worker-internal-mh21-s3-sapi.us-e2.cloudhub.io"
+    port: "8092"
+    version: "v1"
+  notification-sapi:
+    host: "mule-worker-internal-mh21-notification-sapi.us-e2.cloudhub.io"
+    port: "8092"
+    version: "v1"
+  order-salesforce-sapi:
+    host: "mule-worker-internal-mh21-order-salesforce-sapi.us-e2.cloudhub.io"
+    port: "8092"
+    version: "v1"

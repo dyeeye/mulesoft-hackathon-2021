@@ -9,8 +9,8 @@ broker:
     order: "live.pushOrders.queue"
   
 mule:
-  clientId: ""
-  clientSecret: ""
+  clientId: "![sZtwMMB9Iss9WfSokHcKW8cuXkjBGLifvhgFQmhYlwVFlCwy1zzQfP9OhN8eimk+]"
+  clientSecret: "![z01TGSdMjf6puQUX+hiphAyw99V63E1mLd1mAkV4cpGj2kvmRPxo2zXezR8zx/IP]"
   truststore:
     password: "![Z2KcdBXXGWOaURt981eJnA==]"
   s3-sapi:

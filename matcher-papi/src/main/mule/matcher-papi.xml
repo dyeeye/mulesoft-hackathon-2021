@@ -11,6 +11,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 		<logger level="INFO" doc:name="Start" doc:id="72177c16-419e-47ed-96f9-8890922f9a7e" message="Processing new order image"/>
 		<set-variable value="#[payload.consumer]" doc:name="Consumer ID" doc:id="323fbcc3-fdb0-4bf6-9bd9-0fe4fcf53637" variableName="consumerId"/>
 		<flow-ref doc:name='upload-file-flow' doc:id="ad4777ef-ff5a-436f-aa40-4bdf1e3489d4" name="upload-file-flow"/>
+		<set-variable value="#[payload.fileName]" doc:name="Image File Name" doc:id="b82c8934-2407-4aed-b79d-f19d3fb888cd" variableName="fileName"/>
 		<flow-ref doc:name="rekognize-labels-flow" doc:id="e589f6a5-b943-4c10-805f-24cad3380202" name="rekognize-labels-flow" target="labels"/>
 		<choice doc:name="Labels detected?" doc:id="be92e90e-90ed-4dfd-8a1e-c9e48aaf8832" >
 			<when expression="#[sizeOf(payload.labels) &gt; 0]">
@@ -25,7 +26,8 @@ output application/json
 	orders: payload.orders map {
         orderNumber: $.number,
         id: $.id
-    }
+    },
+    fileName: vars.fileName
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>

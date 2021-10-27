@@ -144,7 +144,8 @@ button,
 				
 			//wait for messages back
 			ws.onmessage = function (event) {
-				var orders = JSON.parse(event.data).orders;
+				var response = JSON.parse(event.data);
+				var orders = response.orders;
 				if(orders == null) {
 					$("#failed").show();
 				} else if(orders.length == 0) {
@@ -152,6 +153,7 @@ button,
 				} else if(orders.length > 0) {
 					$(".order-number").text(orders[0].orderNumber);
 					$(".order-number").attr("sfid", orders[0].id);
+					$(".order-number").attr("fileName", response.fileName);
 					$("#matchOrder").show();
 				}
 				
@@ -193,7 +195,10 @@ button,
 				
 				// confirm order
 				$("#confirm").click(function(e){
-					ws.send(JSON.stringify({order: $(".order-number").first().attr("sfid")}));
+					ws.send(JSON.stringify({
+						order: $(".order-number").first().attr("sfid"),
+						fileName: $(".order-number").first().attr("fileName")
+						}));
 					$("#matchOrder").hide();
 					$("#collectedOrder").show();
 				});

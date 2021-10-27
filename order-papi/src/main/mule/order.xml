@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	
+	<flow name="get-image-flow" doc:id="c8827f8c-7fda-4bed-ac28-98818ef59a5a" >
+		<http:request method="GET" doc:name="Get Image" doc:id="7155447e-fed2-498a-bd51-70790788c8ce" config-ref="S3-SAPI_Request_configuration" path="/files/{id}" sendCorrelationId="ALWAYS">
+			<http:uri-params ><![CDATA[#[{
+	id: payload.photo.fileName
+}]]]></http:uri-params>
+		</http:request>
+	</flow>
+	<flow name="update-order-flow" doc:id="67e0a8e5-a6ac-4b87-a575-96bc08fcbbfa" >
+		<ee:transform doc:name="Collected Order" doc:id="bfe0de0f-e5f2-4aed-bac2-44feb36ab818" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	status: "Collected",
+	photo: {
+		fileName: ""
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="PATCH" doc:name="Update Order" doc:id="70326ed4-5820-4be9-9fcd-ffaf6aeb8b21" config-ref="Order-Salesforce-SAPI_Request_configuration" path="/order/{id}" sendCorrelationId="ALWAYS">
+			<http:uri-params ><![CDATA[#[{
+	id: vars.id
+}]]]></http:uri-params>
+		</http:request>
+	</flow>
+	<flow name="send-email-notification-flow" doc:id="0d684ebf-9a25-4c2c-896f-2a7826e10855" >
+		<ee:transform doc:name="Email Message" doc:id="394d6904-4030-4f7d-a3a8-acc9f3892884" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="Email" doc:id="5ab6d257-cb1a-439f-91aa-23db11dc5816" config-ref="Notification-SAPI_Request_configuration" path="/email/{recipient}" sendCorrelationId="ALWAYS">
+			<http:uri-params ><![CDATA[#[{
+	recipient: vars.order.customer.email
+}]]]></http:uri-params>
+		</http:request>
+	</flow>
+</mule>

@@ -15,7 +15,7 @@ output application/json
 {
 	id: payload.order,
 	photo: {
-		uri: ""
+		fileName: payload.fileName
 	}
 }]]></ee:set-payload>
 			</ee:message>

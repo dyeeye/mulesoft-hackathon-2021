@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
 	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd 
 http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
 	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="d45a19e8-1397-4491-95dd-ba74347ca71c" file="properties/${env}-secure.yaml" key="${runtime.key}" />
 	<global-property doc:name="Global Property" doc:id="48b9124e-34b6-4ffc-b80c-393a06e6ed7d" name="env" value="dev" />
 	<global-property doc:name="Global Property" doc:id="d397524b-143b-4599-bfe0-cf7b181b329e" name="runtime.key" value="123456789101234567" />
@@ -21,7 +22,7 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 			</tls:context>
 		</http:listener-connection>
     </http:listener-config>
-    <apikit:config name="order-papi-config" api="resource::9bc3ba95-5f0d-4f01-8718-68464a7c5df0:order-papi:1.0.1:raml:zip:order-papi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <apikit:config name="order-papi-config" api="resource::9bc3ba95-5f0d-4f01-8718-68464a7c5df0:order-papi:1.0.2:raml:zip:order-papi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     
     <http:request-config name="Order-Salesforce-SAPI_Request_configuration" doc:name="HTTP Request configuration" doc:id="1246cc01-9f33-4105-b5b2-24ffc8f66d70" basePath="/api/${secure::mule.order-salesforce-sapi.version}">
 		<http:request-connection protocol="HTTPS" host="${secure::mule.order-salesforce-sapi.host}" port="${secure::mule.order-salesforce-sapi.port}" >
@@ -44,4 +45,5 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 			</tls:context>
 		</http:request-connection>
 	</http:request-config>
+	<api-gateway:autodiscovery apiId="${secure::api.autodiscovery}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="fd18e63b-159c-4f83-88b0-806fc1c98158" flowRef="order-papi-main" />
 </mule>

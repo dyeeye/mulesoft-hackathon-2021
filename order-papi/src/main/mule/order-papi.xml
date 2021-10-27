@@ -101,54 +101,15 @@ output application/json
         </error-handler>
     </flow>
     <flow name="patch:\orders\(id):application\json:order-papi-config">
-        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+        <ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" doc:name="Order ID">
             <ee:variables>
                 <ee:set-variable variableName="id">attributes.uriParams.'id'</ee:set-variable>
             </ee:variables>
         </ee:transform>
+		<flow-ref doc:name="get-image-flow" doc:id="1dc9f518-4eb0-4730-a977-eaa6aeb2f6c8" name="get-image-flow" target="image"/>
+		<flow-ref doc:name="update-order-flow" doc:id="f9e46520-87ac-47c8-93a3-3c081f9f9ebe" name="update-order-flow" target="order"/>
+		<async doc:name="Async" doc:id="566ee2f8-8cb5-4f4b-a5d1-4c670842b04d" >
+			<flow-ref doc:name="send-email-notification-flow" doc:id="3b018c2a-c30e-4557-b392-124f431f6d5d" name="send-email-notification-flow"/>
+		</async>
     </flow>
-	<flow name="get-image-flow" doc:id="e1ba20b0-b382-4d37-8500-6fc5cc6da177" >
-		<http:request method="GET" doc:name="Get Image" doc:id="91df46fd-fbb7-4a6f-b542-aae12fba3636" config-ref="S3-SAPI_Request_configuration" path="/files/{id}" sendCorrelationId="ALWAYS">
-			<http:uri-params ><![CDATA[#[{
-	id: payload.photo.fileName
-}]]]></http:uri-params>
-		</http:request>
-	</flow>
-	<flow name="update-order-flow" doc:id="882e3658-5fb8-47e8-9517-5bb7ec6f2e27" >
-		<ee:transform doc:name="Collected Order" doc:id="8a285c7a-0da7-4193-bc05-c17b18deb121" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	status: "Collected",
-	photo: {
-		fileName: ""
-	}
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<http:request method="PATCH" doc:name="Update Order" doc:id="3347762d-3683-42c2-b46e-998342e2dc53" config-ref="Order-Salesforce-SAPI_Request_configuration" path="/order/{id}" sendCorrelationId="ALWAYS">
-			<http:uri-params ><![CDATA[#[{
-	id: vars.id
-}]]]></http:uri-params>
-		</http:request>
-	</flow>
-	<flow name="send-email-notification-flow" doc:id="ea6fc376-8711-4901-aec8-020ef45ab4c9" >
-		<ee:transform doc:name="Email Message" doc:id="0deee445-ab31-4757-8cf8-f29d347c3d03" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<http:request method="POST" doc:name="Email" doc:id="d6c8135f-aa50-4495-83b5-4ac4bb4a9106" config-ref="Notification-SAPI_Request_configuration" path="/email/{recipient}" sendCorrelationId="ALWAYS">
-			<http:uri-params ><![CDATA[#[{
-	recipient: vars.order.customer.email
-}]]]></http:uri-params>
-		</http:request>
-	</flow>
 </mule>

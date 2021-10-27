@@ -55,7 +55,7 @@
 		<dependency>
 			<groupId>9bc3ba95-5f0d-4f01-8718-68464a7c5df0</groupId>
 			<artifactId>order-papi</artifactId>
-			<version>1.0.1</version>
+			<version>1.0.2</version>
 			<classifier>raml</classifier>
 			<type>zip</type>
 		</dependency>
