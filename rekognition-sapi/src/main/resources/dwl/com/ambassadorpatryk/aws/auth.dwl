@@ -120,14 +120,8 @@ fun headerKeys(headers: Object) =
 	keySet(headers) map (trim(lower($))) orderBy $ joinBy ";"
 	
 	
-/*
- * TODO!
- */
 fun canoncialUri(uri) =
  '/'
- 
-/*
- * TODO!
- */
+
 fun canonicalQueryParameters(queryParameters) = 
  ''
