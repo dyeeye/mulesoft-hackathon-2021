@@ -14,8 +14,27 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 		<set-variable value="#[payload.fileName]" doc:name="Image File Name" doc:id="b82c8934-2407-4aed-b79d-f19d3fb888cd" variableName="fileName"/>
 		<flow-ref doc:name="rekognize-labels-flow" doc:id="e589f6a5-b943-4c10-805f-24cad3380202" name="rekognize-labels-flow" target="labels"/>
 		<choice doc:name="Labels detected?" doc:id="be92e90e-90ed-4dfd-8a1e-c9e48aaf8832" >
-			<when expression="#[sizeOf(payload.labels) &gt; 0]">
-				<flow-ref doc:name="get-orders-flow" doc:id="dcdf8fe0-9cd2-4dcb-8ed6-2087762bec5f" name="get-orders-flow"/>
+			<when expression="#[!isEmpty(vars.labels.labels) and sizeOf(vars.labels.labels) &gt; 0]">
+				<choice doc:name="Choice" doc:id="cdc55b7b-73fa-4ce0-b6b9-0f6680628397" >
+					<when expression="#[true]">
+						<ee:transform doc:name="Transform Message" doc:id="db1918c2-74ab-4540-af6f-8dbdb33e01a8" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	orders: [{
+        number: 'XYZ100',
+        id: 'O000000002343234334'
+    }]
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</when>
+					<otherwise >
+						<flow-ref doc:name="get-orders-flow" doc:id="dcdf8fe0-9cd2-4dcb-8ed6-2087762bec5f" name="get-orders-flow" />
+					</otherwise>
+				</choice>
 				<ee:transform doc:name="Matched Orders" doc:id="c2497417-0e68-4d30-b382-9a06e26d338d">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
@@ -39,6 +58,7 @@ output application/json
 output application/json
 ---
 {
+	consumer: vars.consumerId,
 	orders: []
 }]]></ee:set-payload>
 					</ee:message>
@@ -50,12 +70,14 @@ output application/json
 		</solace:publish>
 		<error-handler >
 			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="b99e8c65-caff-49ca-8d93-2751a0d133e0" >
+				<logger level="ERROR" doc:name="Error" doc:id="60641822-46d1-4efc-b814-4c6e7c1d3b91" message="Error occured. Sending message back."/>
 				<ee:transform doc:name="Error" doc:id="a9373ed5-8c8b-484a-a89f-cd553d48dd85" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
 {
+	consumer: vars.consumerId,
 	error: error.description
 }]]></ee:set-payload>
 					</ee:message>
@@ -115,14 +137,14 @@ output application/json
 import entrySet from dw::core::Objects
 ---
 {
-	products: entrySet(payload.labels groupBy $.name) map {
+	products: entrySet(vars.labels.labels groupBy $.name) map {
 		code: $.key,
 		quantity: sizeOf($.value)
 	}
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<http:request method="POST" doc:name="Match Orders" doc:id="f0429802-4eba-4562-a51f-a25bcb6369c3" config-ref="Order-Salesforce-SAPI_Request_configuration" path="/order/products" sendCorrelationId="ALWAYS">
+		<http:request method="POST" doc:name="Match Orders" doc:id="f0429802-4eba-4562-a51f-a25bcb6369c3" config-ref="Order-Salesforce-SAPI_Request_configuration" path="/orders/products" sendCorrelationId="ALWAYS">
 			<http:headers ><![CDATA[#[{
 	client_id: Mule::p('secure::mule.clientId'),
 	client_secret: Mule::p('secure::mule.clientSecret')

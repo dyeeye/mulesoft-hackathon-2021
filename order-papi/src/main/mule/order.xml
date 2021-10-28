@@ -7,13 +7,24 @@
 	xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
-	
-	<flow name="get-image-flow" doc:id="c8827f8c-7fda-4bed-ac28-98818ef59a5a" >
-		<http:request method="GET" doc:name="Get Image" doc:id="7155447e-fed2-498a-bd51-70790788c8ce" config-ref="S3-SAPI_Request_configuration" path="/files/{id}" sendCorrelationId="ALWAYS">
-			<http:uri-params ><![CDATA[#[{
+	<flow name="get-order-image-flow" doc:id="88558e8a-7422-485e-9505-863d4453163c" >
+		<http:request method="GET" doc:name="Get Image" doc:id="09be6070-dfa0-4601-b07d-36b7eff43f93" config-ref="S3-SAPI_Request_configuration" path="/files/{id}" sendCorrelationId="ALWAYS">
+			<http:headers><![CDATA[#[{
+	client_id: Mule::p('secure::mule.clientId'),
+	client_secret: Mule::p('secure::mule.clientSecret')
+}]]]></http:headers>
+			<http:uri-params><![CDATA[#[{
 	id: payload.photo.fileName
 }]]]></http:uri-params>
 		</http:request>
+		<ee:transform doc:name="Image" doc:id="84eaa303-10fe-4c2e-aeaf-639392ce8f75">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload.content]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
 	</flow>
 	<flow name="update-order-flow" doc:id="67e0a8e5-a6ac-4b87-a575-96bc08fcbbfa" >
 		<ee:transform doc:name="Collected Order" doc:id="bfe0de0f-e5f2-4aed-bac2-44feb36ab818" >
@@ -22,14 +33,21 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 output application/json
 ---
 {
-	status: "Collected",
-	photo: {
-		fileName: ""
-	}
+	orders: [{
+		id: vars.id,
+		status: "Collected",
+		photo: {
+			fileName: payload.photo.fileName
+		}
+	}]
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<http:request method="PATCH" doc:name="Update Order" doc:id="70326ed4-5820-4be9-9fcd-ffaf6aeb8b21" config-ref="Order-Salesforce-SAPI_Request_configuration" path="/order/{id}" sendCorrelationId="ALWAYS">
+		<http:request method="PATCH" doc:name="Update Order" doc:id="70326ed4-5820-4be9-9fcd-ffaf6aeb8b21" config-ref="Order-Salesforce-SAPI_Request_configuration" path="/orders" sendCorrelationId="ALWAYS">
+			<http:headers ><![CDATA[#[{
+	client_id: Mule::p('secure::mule.clientId'),
+	client_secret: Mule::p('secure::mule.clientSecret')
+}]]]></http:headers>
 			<http:uri-params ><![CDATA[#[{
 	id: vars.id
 }]]]></http:uri-params>
@@ -42,11 +60,20 @@ output application/json
 output application/json
 ---
 {
-	
+	title: 'Your order is collected',
+	body: readUrl('classpath://campaigns/collected.txt', 'text/plain'),
+	attachment: {
+		content: vars.image,
+		name: 'order-picture.png'
+	}
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<http:request method="POST" doc:name="Email" doc:id="5ab6d257-cb1a-439f-91aa-23db11dc5816" config-ref="Notification-SAPI_Request_configuration" path="/email/{recipient}" sendCorrelationId="ALWAYS">
+			<http:headers ><![CDATA[#[{
+	client_id: Mule::p('secure::mule.clientId'),
+	client_secret: Mule::p('secure::mule.clientSecret')
+}]]]></http:headers>
 			<http:uri-params ><![CDATA[#[{
 	recipient: vars.order.customer.email
 }]]]></http:uri-params>
