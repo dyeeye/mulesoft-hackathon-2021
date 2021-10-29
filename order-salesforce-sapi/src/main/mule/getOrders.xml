@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<flow name="getOrdersFlow" doc:id="edf4c3df-6ea4-4ac6-90dc-72ec35921a2a" >
+		<set-variable value="#[payload]" doc:name="Set products" doc:id="d3b53db3-aaed-4bb9-8c25-515cf1ecbfa0" variableName="uniqProducts"/>
+		<logger level="INFO" doc:name="Enriched products array" doc:id="a4bac629-2495-4cb5-be05-52ac8897af7b" message="[getOrders] Payload is:'#[payload]' and added vars: '#[vars.uniqProducts]'"/>
+		<ee:transform doc:name="Prepare WHERE conditions for getting products IDs" doc:id="c220da06-4a16-4400-8ed9-a2feec1f3896" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "joinedCond": (payload.products map (item,index)->"(Label__c = '" ++ item.code ++ "')") joinBy " OR "
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Before Salesforce request" doc:id="593f5a60-bc6d-4e8b-bb43-725d920e7f39" message="[getOrders] Before sending to salesforce:'#[payload]'" />
+		<salesforce:query doc:name="Query" doc:id="88f614ca-cbd0-427e-a2b5-7aab492c6b19" config-ref="Salesforce_connector_config" >
+			<salesforce:salesforce-query ><![CDATA[SELECT Id, Label__c FROM Product2 WHERE :whereCondition]]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"whereCondition" : payload.joinedCond
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Map response from Salesforce" doc:id="1c7efe6e-d000-4515-b1ec-4b0a7de97b67">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    products: payload map ((item, index) -> {"id": item.Id, "code": item.Label__c, "quantity": (vars.uniqProducts.products filter ((uniqprod, index) -> item.Label__c == uniqprod.code )).quantity[0]})
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Salesforce response" doc:id="42d65428-ce55-4144-a5a9-5d2e9e5bff23" message="[getOrders] Salesforce response:'#[payload]'" />
+		<choice doc:name="Choice" doc:id="bfe3c4b0-e0ab-4811-bccd-bcf3a59a8d8d">
+			<when expression="#[sizeOf(payload.products) == sizeOf(vars.uniqProducts.products)]" >
+				<flow-ref doc:name="Invoke getOrderItemsWithProducts" doc:id="23281cf2-ddf7-4b03-8558-8b5411082524" name="getOrderItemsWithProducts" />
+			</when>
+			<otherwise >
+				<logger level="ERROR" doc:name="Response from salesforce differs from entry list" doc:id="6174cf7b-9744-4af0-813a-2e0ff3b63da6"/>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="getOrderItemsWithProducts" doc:id="e8b4d013-c9e7-4cab-abf3-2f439a09de5a" >
+		<set-variable value="#[payload]" doc:name="Set originPayload" doc:id="a03ca7ea-b356-444d-9d48-c15d06f62959" variableName="originPayload"/>
+		<ee:transform doc:name="Prepare WHERE conditions for orderItems" doc:id="018544eb-1a44-4260-aaeb-9502b55ad2ea" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "joinedCond": ((payload.products map (item,index)->"(OrderItem.Product2Id = '" ++ item.id ++ "' AND OrderItem.Quantity=" ++ item.quantity ++ ")") joinBy " OR ")
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Before Salesforce request" doc:id="2193d1f4-1dab-4bb7-bc47-f29296af9e72" message="[getOrderItemsWithProducts] Before sending to salesforce:'#[payload]'" />
+		<salesforce:query doc:name="Gather OrderIds for matching orderItems" doc:id="f70ca4b9-f8b8-48ee-8a95-7c2b076ae99d" config-ref="Salesforce_connector_config" >
+			<salesforce:salesforce-query ><![CDATA[SELECT OrderId, Order.EffectiveDate, COUNT(Id) FROM OrderItem WHERE (:whereCondition) GROUP BY OrderId, Order.EffectiveDate]]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"whereCondition" : payload.joinedCond
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;payload]" doc:name="Set matchedOrders variable" doc:id="5bf677b2-20b8-4af6-a41c-5e3c5607bff3" variableName="matchedOrders"/>
+		<ee:transform doc:name="Prepare WHERE conditions for Orders" doc:id="d9facf64-8bcc-4b73-9003-80707045c217" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"joinedCond": "'"++(payload.OrderId joinBy  ("', '") ++ "'")
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Between Salesforce requests" doc:id="6e88141f-7bea-4a11-8192-e9e684e259c3" message="[getOrderItemsWithProducts] Response from previous Salesforce call:'#[vars.matchedOrders]' Salesforce request ready:'#[payload]'" />
+		<salesforce:query doc:name="Count OrderItems and sum Quantities in these orders" doc:id="dfb68ba4-1130-44ee-ba05-fcbbc17ed750" config-ref="Salesforce_connector_config" >
+			<salesforce:salesforce-query ><![CDATA[SELECT Order.Id, COUNT(Id), SUM(Quantity)
+FROM OrderItem
+WHERE (Order.Status = 'Draft' OR Order.Status = 'Activated') AND Order.Id IN (:whereCondition)
+GROUP BY Order.Id]]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"whereCondition" : payload.joinedCond
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Prepare output for logs" doc:id="70535350-2a28-4df9-b536-ed8dfa5b3e9a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Salesforce response" doc:id="cd5cbe58-35bc-450c-bee2-fb2151586c37" message="[getOrderItemsWithProducts] Salesforce response:'#[payload]'"/>
+		<ee:transform doc:name="Map output from salesforce" doc:id="70cea26b-2a79-4554-b7ce-d3761d2a82bd" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"orders": (((vars.matchedOrders map ((mords, ind) -> 
+		if(((payload groupBy ((pld, ind2) -> pld.Id))."$(mords.OrderId)".Id[0]) != null and sum(vars.originPayload.products.quantity) == (payload groupBy ((pld, ind2) -> pld.Id))."$(mords.OrderId)".expr1[0] and (payload groupBy ((pld, ind2) -> pld.Id))."$(mords.OrderId)".expr0[0] == mords.expr0) 
+		"order":{
+		    "id": (payload groupBy ((pld, ind2) -> pld.Id))."$(mords.OrderId)".Id[0],
+		    "date": mords.EffectiveDate as Date
+		}
+		else null
+	)) - null).order)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Sort orders" doc:id="2859a0c4-afae-4c29-955a-39fa4319cbf9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"orders": payload.orders orderBy $.date
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

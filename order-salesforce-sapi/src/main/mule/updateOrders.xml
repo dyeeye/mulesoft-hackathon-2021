@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<flow name="updateOrdersFlow" doc:id="eb82dc28-1e93-47e0-a97c-8a153a2ad81d" >
+		<ee:transform doc:name="Map order objects to nameless objects" doc:id="2848f539-3fa5-4cc1-a76b-7b4e16eac191" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.orders]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Before Salesfore request" doc:id="8264c1b3-1fec-4dbf-8f51-333db71c7fdc" message="[updateOrders] Before sending Salesforce request:'#[payload]'" />
+		<salesforce:update type="Order" doc:name="Update Orders" doc:id="4e62ba72-e92d-41a3-874a-6ddf48b5ee9f" config-ref="Salesforce_connector_config"/>
+		<ee:transform doc:name="Transform Salesforce response to JSON" doc:id="30f522c5-6bb5-49db-b167-eb8ac9b0ab92" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="After Salesfore request" doc:id="21b01bda-c166-44bd-b337-36739a0cbeb8" message="[updateOrders] Response from Salesforce:'#[payload]'"/>
+		<ee:transform doc:name="Prepare response" doc:id="0bd84b3f-5f93-48f9-bcc8-df37d138adc1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+orders:payload.items map ((item, index) -> {
+    "id":item.id,
+    "successful": item.successful
+    })]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

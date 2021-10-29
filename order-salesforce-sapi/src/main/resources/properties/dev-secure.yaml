@@ -1,0 +1,14 @@
+api:
+  version: "v1"
+  
+https:
+  keystore:
+    password: "![Z2KcdBXXGWOaURt981eJnA==]"
+    keypassword: "![Z2KcdBXXGWOaURt981eJnA==]"
+    path: "keystore.p12"
+    
+salesforce:
+  username: "![JAl7xqDd3S+9Iq9x/jxdGePlI6hUrDy5iibQHVxMAr8=]"
+  password: "![UY8YE2UwPZpxpJFrTxiZ+1LGk3rv2o1kuE0ok0Rk7os=]"
+  securityToken: "![K6odMAtlJ4cmnaRT2DmiflKNSOKRjLa0/nXQSjkZKlY=]"
+  serviceEndpoint: "![O0TCu45ogWdybacXajKeCRzw9xjtkBEEaiQ6+cmlhTdw/pCyp3OhO1RvhCM0hH6AMTzyfT5/IAgHuEZAAep0UA==]"
