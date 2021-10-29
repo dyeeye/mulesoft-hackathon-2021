@@ -75,7 +75,7 @@ output application/json
 	client_secret: Mule::p('secure::mule.clientSecret')
 }]]]></http:headers>
 			<http:uri-params ><![CDATA[#[{
-	recipient: vars.order.customer.email
+	recipient: vars.order.order.customer.email
 }]]]></http:uri-params>
 		</http:request>
 	</flow>

@@ -25,5 +25,6 @@ http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/m
 		</http:listener-connection>
 	</http:listener-config>
 	<apikit:config name="salesforce-sapi-config" api="resource::9bc3ba95-5f0d-4f01-8718-68464a7c5df0:salesforce-sapi:1.0.8:raml:zip:salesforce-sapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+	<api-gateway:autodiscovery apiId="${secure::api.autodiscovery}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="6e419bca-2fd5-416d-b315-bbfde5b73ec1" flowRef="salesforce-sapi-main" />
  
 </mule>

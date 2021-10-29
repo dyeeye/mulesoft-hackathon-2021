@@ -108,7 +108,7 @@ output application/json
         </ee:transform>
 		<flow-ref doc:name="get-order-image-flow" doc:id="b181fc74-730f-4d36-998e-5b214dad8ce5" name="get-order-image-flow" target="image"/>
 		<flow-ref doc:name="update-order-flow" doc:id="f9e46520-87ac-47c8-93a3-3c081f9f9ebe" name="update-order-flow" target="order" />
-		<http:request method="GET" doc:name="Order Details" doc:id="6e930a4b-244f-4e54-9208-53d2b389d722" config-ref="Order-Salesforce-SAPI_Request_configuration" path="/order/{id}" sendCorrelationId="ALWAYS" target="order">
+		<http:request method="GET" doc:name="Order Details" doc:id="6e930a4b-244f-4e54-9208-53d2b389d722" config-ref="Order-Salesforce-SAPI_Request_configuration" path="/orders/{id}" sendCorrelationId="ALWAYS" target="order">
 			<http:headers><![CDATA[#[{
 	client_id: Mule::p('secure::mule.clientId'),
 	client_secret: Mule::p('secure::mule.clientSecret')
