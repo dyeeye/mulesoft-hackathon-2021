@@ -8,16 +8,17 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 	<flow name="get-order-by-id-flow" doc:id="83627543-f47a-4b6e-ac0e-c0b3be256c7c" >
 		<logger level="INFO" doc:name="Before request" doc:id="714245e7-17f6-4d2d-9a72-665963330401" message="[getOrderById] Before sending Salesforce request: #[attributes.uriParams.'id']"/>
 		<salesforce:query doc:name="Query order" doc:id="2d7e2807-7f22-4e55-bb6e-afdcc25b902d" config-ref="Salesforce_connector_config">
-			<salesforce:salesforce-query ><![CDATA[SELECT Id, Customer_Email__c, Status FROM Order WHERE Id = ':inputId']]></salesforce:salesforce-query>
+			<salesforce:salesforce-query ><![CDATA[SELECT Id, Customer_Email__c, Status, photoName__c FROM Order WHERE Id = ':inputId']]></salesforce:salesforce-query>
 			<salesforce:parameters ><![CDATA[#[output application/java
 ---
 {
 	"inputId" : attributes.uriParams.'id'
 }]]]></salesforce:parameters>
 		</salesforce:query>
-		<ee:transform doc:name="Order" doc:id="578eb76a-72f7-4d38-b259-2daa04c45542" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		<logger level="INFO" doc:name="Logger" doc:id="5acc49ae-0d6f-43f4-a447-0b2ffa2a90f1" message="#[write(payload, 'application/json')]"/>
+		<ee:transform doc:name="Map salesforce response" doc:id="578eb76a-72f7-4d38-b259-2daa04c45542">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -26,11 +27,14 @@ output application/json
         "status": payload[0].Status,
         "customer":{
             "email": payload[0].Customer_Email__c
+        },
+        "photo":{
+        	"fileName": payload[0].photoName__c
         }
     }
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<logger level="INFO" doc:name="After request" doc:id="b926af22-93b4-4bec-97f1-81f27491b9c7" message="[getOrderById] Prepared response:'#[payload]'" />
+		<logger level="INFO" doc:name="After request" doc:id="b926af22-93b4-4bec-97f1-81f27491b9c7" message="[getOrderById] Prepared response:'#[write(payload, 'application/json')]" />
 	</flow>
 </mule>

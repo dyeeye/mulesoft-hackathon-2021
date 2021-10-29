@@ -9,20 +9,25 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 		<ee:transform doc:name="Map order objects to nameless objects" doc:id="2848f539-3fa5-4cc1-a76b-7b4e16eac191" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
+output application/json skipNullOn="everywhere"
 ---
-payload.orders]]></ee:set-payload>
+payload.orders map ((item, index) ->{
+    "Status": item.status,
+    "Id": item.id,
+    "photoName__c": item.photo.fileName
+})]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<logger level="INFO" doc:name="Before Salesfore request" doc:id="8264c1b3-1fec-4dbf-8f51-333db71c7fdc" message="[updateOrders] Before sending Salesforce request:'#[payload]'" />
 		<salesforce:update type="Order" doc:name="Update Orders" doc:id="4e62ba72-e92d-41a3-874a-6ddf48b5ee9f" config-ref="Salesforce_connector_config"/>
-		<logger level="INFO" doc:name="After Salesfore request" doc:id="21b01bda-c166-44bd-b337-36739a0cbeb8" message="[updateOrders] Response from Salesforce:'#[payload]'"/>
+		<logger level="INFO" doc:name="After Salesfore request" doc:id="21b01bda-c166-44bd-b337-36739a0cbeb8" message="[updateOrders] Response from Salesforce:#[write(payload, 'application/json')]"/>
 		<ee:transform doc:name="Prepare response" doc:id="0bd84b3f-5f93-48f9-bcc8-df37d138adc1" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
+output application/json skipNullOn="everywhere"
+
 ---
-orders:payload.items map ((item, index) -> {
+orders:payload.items map ((item, index) ->{
     "id":item.id
     })]]></ee:set-payload>
 			</ee:message>
