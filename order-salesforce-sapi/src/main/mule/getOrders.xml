@@ -5,7 +5,7 @@
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
-	<flow name="getOrdersFlow" doc:id="edf4c3df-6ea4-4ac6-90dc-72ec35921a2a" >
+	<flow name="get-orders-flow" doc:id="edf4c3df-6ea4-4ac6-90dc-72ec35921a2a" >
 		<set-variable value="#[payload]" doc:name="Set products" doc:id="d3b53db3-aaed-4bb9-8c25-515cf1ecbfa0" variableName="uniqProducts"/>
 		<logger level="INFO" doc:name="Enriched products array" doc:id="a4bac629-2495-4cb5-be05-52ac8897af7b" message="[getOrders] Payload is:'#[payload]' and added vars: '#[vars.uniqProducts]'"/>
 		<ee:transform doc:name="Prepare WHERE conditions for getting products IDs" doc:id="c220da06-4a16-4400-8ed9-a2feec1f3896" >
@@ -40,14 +40,14 @@ output application/json
 		<logger level="INFO" doc:name="Salesforce response" doc:id="42d65428-ce55-4144-a5a9-5d2e9e5bff23" message="[getOrders] Salesforce response:'#[payload]'" />
 		<choice doc:name="Choice" doc:id="bfe3c4b0-e0ab-4811-bccd-bcf3a59a8d8d">
 			<when expression="#[sizeOf(payload.products) == sizeOf(vars.uniqProducts.products)]" >
-				<flow-ref doc:name="Invoke getOrderItemsWithProducts" doc:id="23281cf2-ddf7-4b03-8558-8b5411082524" name="getOrderItemsWithProducts" />
+				<flow-ref doc:name="Invoke getOrderItemsWithProducts" doc:id="23281cf2-ddf7-4b03-8558-8b5411082524" name="get-order-items-with-products-flow" />
 			</when>
 			<otherwise >
 				<logger level="ERROR" doc:name="Response from salesforce differs from entry list" doc:id="6174cf7b-9744-4af0-813a-2e0ff3b63da6"/>
 			</otherwise>
 		</choice>
 	</flow>
-	<flow name="getOrderItemsWithProducts" doc:id="e8b4d013-c9e7-4cab-abf3-2f439a09de5a" >
+	<flow name="get-order-items-with-products-flow" doc:id="e8b4d013-c9e7-4cab-abf3-2f439a09de5a" >
 		<set-variable value="#[payload]" doc:name="Set originPayload" doc:id="a03ca7ea-b356-444d-9d48-c15d06f62959" variableName="originPayload"/>
 		<ee:transform doc:name="Prepare WHERE conditions for orderItems" doc:id="018544eb-1a44-4260-aaeb-9502b55ad2ea" >
 			<ee:message >
@@ -91,15 +91,7 @@ GROUP BY Order.Id]]></salesforce:salesforce-query>
 	"whereCondition" : payload.joinedCond
 }]]]></salesforce:parameters>
 		</salesforce:query>
-		<ee:transform doc:name="Prepare output for logs" doc:id="70535350-2a28-4df9-b536-ed8dfa5b3e9a" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-payload]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<logger level="INFO" doc:name="Salesforce response" doc:id="cd5cbe58-35bc-450c-bee2-fb2151586c37" message="[getOrderItemsWithProducts] Salesforce response:'#[payload]'"/>
+		<logger level="INFO" doc:name="Salesforce response" doc:id="cd5cbe58-35bc-450c-bee2-fb2151586c37" message="[getOrderItemsWithProducts] Salesforce response:#[write(payload, 'application/json')]"/>
 		<ee:transform doc:name="Map output from salesforce" doc:id="70cea26b-2a79-4554-b7ce-d3761d2a82bd" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0

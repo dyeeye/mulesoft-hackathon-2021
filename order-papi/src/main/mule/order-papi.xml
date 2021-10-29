@@ -107,26 +107,8 @@ output application/json
             </ee:variables>
         </ee:transform>
 		<flow-ref doc:name="get-order-image-flow" doc:id="b181fc74-730f-4d36-998e-5b214dad8ce5" name="get-order-image-flow" target="image"/>
-		<choice doc:name="Choice" doc:id="75810be0-c0bf-4c41-9543-3c9bc02acad2" >
-			<when expression="#[true]">
-				<ee:transform doc:name="Transform Message" doc:id="c5508a62-a63f-449b-83de-d05458095054" >
-					<ee:message >
-					</ee:message>
-					<ee:variables >
-						<ee:set-variable variableName="order" ><![CDATA[%dw 2.0
-output application/json
----
-{
-	customer: {
-		email: 'patryk.bandurski@gmail.com'
-	}
-}]]></ee:set-variable>
-					</ee:variables>
-				</ee:transform>
-			</when>
-			<otherwise >
-				<flow-ref doc:name="update-order-flow" doc:id="f9e46520-87ac-47c8-93a3-3c081f9f9ebe" name="update-order-flow" target="order" />
-				<http:request method="GET" doc:name="Order Details" doc:id="6e930a4b-244f-4e54-9208-53d2b389d722" config-ref="Order-Salesforce-SAPI_Request_configuration" path="/orders/{id}" sendCorrelationId="ALWAYS" target="order">
+		<flow-ref doc:name="update-order-flow" doc:id="f9e46520-87ac-47c8-93a3-3c081f9f9ebe" name="update-order-flow" target="order" />
+		<http:request method="GET" doc:name="Order Details" doc:id="6e930a4b-244f-4e54-9208-53d2b389d722" config-ref="Order-Salesforce-SAPI_Request_configuration" path="/order/{id}" sendCorrelationId="ALWAYS" target="order">
 			<http:headers><![CDATA[#[{
 	client_id: Mule::p('secure::mule.clientId'),
 	client_secret: Mule::p('secure::mule.clientSecret')
@@ -135,8 +117,6 @@ output application/json
 	id: vars.id
 }]]]></http:uri-params>
 		</http:request>
-			</otherwise>
-		</choice>
 		<async doc:name="Async" doc:id="566ee2f8-8cb5-4f4b-a5d1-4c670842b04d" >
 			<flow-ref doc:name="send-email-notification-flow" doc:id="3b018c2a-c30e-4557-b392-124f431f6d5d" name="send-email-notification-flow"/>
 		</async>

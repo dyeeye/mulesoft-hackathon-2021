@@ -5,27 +5,17 @@
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
-	<flow name="getOrderByIdFlow" doc:id="83627543-f47a-4b6e-ac0e-c0b3be256c7c" >
-		<ee:transform doc:name="Prepare request" doc:id="374c6bd0-47bb-416c-af53-e3e41ba00e05" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/java
----
-{
-	"id": "Id = '" ++ attributes.uriParams.'id' ++"'"
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<logger level="INFO" doc:name="Before request" doc:id="714245e7-17f6-4d2d-9a72-665963330401" message="[getOrderById] Before sending Salesforce request:'#[payload]'"/>
+	<flow name="get-order-by-id-flow" doc:id="83627543-f47a-4b6e-ac0e-c0b3be256c7c" >
+		<logger level="INFO" doc:name="Before request" doc:id="714245e7-17f6-4d2d-9a72-665963330401" message="[getOrderById] Before sending Salesforce request: #[attributes.uriParams.'id']"/>
 		<salesforce:query doc:name="Query order" doc:id="2d7e2807-7f22-4e55-bb6e-afdcc25b902d" config-ref="Salesforce_connector_config">
-			<salesforce:salesforce-query ><![CDATA[SELECT Id, Customer_Email__c, Status FROM Order WHERE :inputId]]></salesforce:salesforce-query>
+			<salesforce:salesforce-query ><![CDATA[SELECT Id, Customer_Email__c, Status FROM Order WHERE Id = ':inputId']]></salesforce:salesforce-query>
 			<salesforce:parameters ><![CDATA[#[output application/java
 ---
 {
-	"inputId" : payload.id
+	"inputId" : attributes.uriParams.'id'
 }]]]></salesforce:parameters>
 		</salesforce:query>
-		<ee:transform doc:name="Transform Message" doc:id="578eb76a-72f7-4d38-b259-2daa04c45542" >
+		<ee:transform doc:name="Order" doc:id="578eb76a-72f7-4d38-b259-2daa04c45542" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json

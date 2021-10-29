@@ -15,26 +15,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 		<flow-ref doc:name="rekognize-labels-flow" doc:id="e589f6a5-b943-4c10-805f-24cad3380202" name="rekognize-labels-flow" target="labels"/>
 		<choice doc:name="Labels detected?" doc:id="be92e90e-90ed-4dfd-8a1e-c9e48aaf8832" >
 			<when expression="#[!isEmpty(vars.labels.labels) and sizeOf(vars.labels.labels) &gt; 0]">
-				<choice doc:name="Choice" doc:id="cdc55b7b-73fa-4ce0-b6b9-0f6680628397" >
-					<when expression="#[true]">
-						<ee:transform doc:name="Transform Message" doc:id="db1918c2-74ab-4540-af6f-8dbdb33e01a8" >
-							<ee:message >
-								<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	orders: [{
-        number: 'XYZ100',
-        id: 'O000000002343234334'
-    }]
-}]]></ee:set-payload>
-							</ee:message>
-						</ee:transform>
-					</when>
-					<otherwise >
-						<flow-ref doc:name="get-orders-flow" doc:id="dcdf8fe0-9cd2-4dcb-8ed6-2087762bec5f" name="get-orders-flow" />
-					</otherwise>
-				</choice>
+				<flow-ref doc:name="get-orders-flow" doc:id="dcdf8fe0-9cd2-4dcb-8ed6-2087762bec5f" name="get-orders-flow" />
 				<ee:transform doc:name="Matched Orders" doc:id="c2497417-0e68-4d30-b382-9a06e26d338d">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
