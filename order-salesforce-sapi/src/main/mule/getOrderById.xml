@@ -8,7 +8,7 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 	<flow name="get-order-by-id-flow" doc:id="83627543-f47a-4b6e-ac0e-c0b3be256c7c" >
 		<logger level="INFO" doc:name="Before request" doc:id="714245e7-17f6-4d2d-9a72-665963330401" message="[getOrderById] Before sending Salesforce request: #[attributes.uriParams.'id']"/>
 		<salesforce:query doc:name="Query order" doc:id="2d7e2807-7f22-4e55-bb6e-afdcc25b902d" config-ref="Salesforce_connector_config">
-			<salesforce:salesforce-query ><![CDATA[SELECT Id, Customer_Email__c, Status, photoName__c FROM Order WHERE Id = ':inputId']]></salesforce:salesforce-query>
+			<salesforce:salesforce-query ><![CDATA[SELECT Id, Customer_Email__c, Status, photoName__c, OrderNumber FROM Order WHERE Id = ':inputId']]></salesforce:salesforce-query>
 			<salesforce:parameters ><![CDATA[#[output application/java
 ---
 {
@@ -24,6 +24,7 @@ output application/json
 {
     "order":{
         "id": payload[0].Id,
+        "number": payload[0].OrderNumber,
         "status": payload[0].Status,
         "customer":{
             "email": payload[0].Customer_Email__c
