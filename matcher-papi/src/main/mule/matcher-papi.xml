@@ -23,7 +23,7 @@ output application/json
 ---
 {
 	consumer: vars.consumerId,
-	orders: payload.orders map {
+	orders: (payload.orders default[]) map {
         orderNumber: $.number,
         id: $.id
     },
