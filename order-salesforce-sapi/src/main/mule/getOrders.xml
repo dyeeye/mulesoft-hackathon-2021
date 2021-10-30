@@ -106,51 +106,6 @@ GROUP BY Order.Id]]></salesforce:salesforce-query>
 }]]]></salesforce:parameters>
 		</salesforce:query>
 				<logger level="INFO" doc:name="Salesforce response" doc:id="cd5cbe58-35bc-450c-bee2-fb2151586c37" message="[getOrderItemsWithProducts] Salesforce response:#[write(payload, 'application/json')]" />
-				<ee:transform doc:name="Sort orders" doc:id="2859a0c4-afae-4c29-955a-39fa4319cbf9">
-			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-	"orders": payload.orders orderBy $.date
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-				<ee:transform doc:name="Add order numbers to order object" doc:id="2507030c-1271-4a9c-864a-0696af6d6b7d">
-			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-	"orders": (vars.orders map((item, index) -> {
-		"id": item.id,
-		"date": item.date,
-		"number": (payload groupBy ((pld, ind2) -> pld.Id))."$(item.id)".OrderNumber[0]
-	}))
-		
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-				<logger level="INFO" doc:name="Query Salesforce response" doc:id="b9353c64-3772-4139-8d79-bc8f95b320bd" message="[getOrderItemsWithProducts] Response from query order numbers :#[write(payload, 'application/json')]" />
-				<salesforce:query doc:name="Query Salesforce for order numbers" doc:id="b2996b25-2373-4398-919a-24d75f1138a1" config-ref="Salesforce_connector_config">
-			<salesforce:salesforce-query><![CDATA[SELECT Id, OrderNumber FROM Order WHERE :whereCondition]]></salesforce:salesforce-query>
-			<salesforce:parameters><![CDATA[#[output application/java
----
-{
-	"whereCondition" : payload.joinedCond
-}]]]></salesforce:parameters>
-		</salesforce:query>
-				<ee:transform doc:name="Prepare Salesforce query for order numbers" doc:id="917448d8-1182-47c4-b270-12f99ed16647">
-			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-	"joinedCond": (payload.orders map (item,index)->"(Id = '" ++ item.id ++ "')") joinBy " OR "
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-				<set-variable value="#[payload.orders]" doc:name="Save Orders" doc:id="0fb107a1-65d7-4da3-9b9b-44b82058377b" variableName="orders" />
 				<ee:transform doc:name="Map output from salesforce" doc:id="70cea26b-2a79-4554-b7ce-d3761d2a82bd">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
@@ -168,6 +123,67 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+				<choice doc:name="Choice" doc:id="33992f6c-d84f-4e76-9c64-30331295bce3">
+					<when expression="#[isEmpty(payload.orders)]">
+						<ee:transform doc:name="No data, return empty orders" doc:id="e008fadc-9365-4993-96f6-eaedad438f8a" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+"orders": []
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</when>
+					<otherwise >
+						<set-variable value="#[payload.orders]" doc:name="Save Orders" doc:id="0fb107a1-65d7-4da3-9b9b-44b82058377b" variableName="orders" />
+						<ee:transform doc:name="Prepare Salesforce query for order numbers" doc:id="917448d8-1182-47c4-b270-12f99ed16647">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"joinedCond": (payload.orders map (item,index)->"(Id = '" ++ item.id ++ "')") joinBy " OR "
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+						<salesforce:query doc:name="Query Salesforce for order numbers" doc:id="b2996b25-2373-4398-919a-24d75f1138a1" config-ref="Salesforce_connector_config">
+			<salesforce:salesforce-query><![CDATA[SELECT Id, OrderNumber FROM Order WHERE :whereCondition]]></salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	"whereCondition" : payload.joinedCond
+}]]]></salesforce:parameters>
+		</salesforce:query>
+						<logger level="INFO" doc:name="Query Salesforce response" doc:id="b9353c64-3772-4139-8d79-bc8f95b320bd" message="[getOrderItemsWithProducts] Response from query order numbers :#[write(payload, 'application/json')]" />
+						<ee:transform doc:name="Add order numbers to order object" doc:id="2507030c-1271-4a9c-864a-0696af6d6b7d">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"orders": (vars.orders map((item, index) -> {
+		"id": item.id,
+		"date": item.date,
+		"number": (payload groupBy ((pld, ind2) -> pld.Id))."$(item.id)".OrderNumber[0]
+	}))
+		
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+						<ee:transform doc:name="Sort orders" doc:id="2859a0c4-afae-4c29-955a-39fa4319cbf9">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"orders": payload.orders orderBy $.date
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+					</otherwise>
+				</choice>
 			</otherwise>
 		</choice>
 	</flow>
