@@ -7,7 +7,7 @@ Needful Things is a project for a MuleSoft Hackathon 2021
 
 ## Submission video
 
-
+[![Submission video](https://img.youtube.com/vi/AaTIJPj_048/0.jpg)](https://youtu.be/AaTIJPj_048)
 
 ## Inspiration
 
